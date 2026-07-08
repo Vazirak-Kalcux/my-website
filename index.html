@@ -1,0 +1,1626 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>치지직 &amp; 위플랩 커스텀 CSS 커스터마이저 v2</title>
+<style>
+  /* ===== 웹폰트 (페이지 UI용 · 로드 실패 시 자동 대체) ===== */
+  @import url('https://cdn.jsdelivr.net/npm/galmuri@latest/dist/galmuri.css');
+  @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css');
+  @font-face {
+    font-family: 'DungGeunMo';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/DungGeunMo.woff') format('woff');
+    font-weight: normal; font-style: normal; font-display: swap;
+  }
+
+  /* ===== 커스터마이저 페이지 자체 스타일 ===== */
+  :root{
+    --cy:#5ee7ff; --pk:#ff2d95;
+    --bg:#0c0818; --panel:#150f26; --panel2:#1b1432;
+    --line:rgba(94,231,255,.16); --txt:#e8ecf7; --sub:#9aa0b8;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:
+      radial-gradient(900px 420px at 85% -10%, rgba(255,45,149,.10), transparent 60%),
+      radial-gradient(800px 420px at -10% 110%, rgba(94,231,255,.08), transparent 60%),
+      var(--bg);
+    color:var(--txt);
+    font-family:'Pretendard','Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+    font-size:14px;
+  }
+
+  /* ----- 상단 헤더 ----- */
+  header{
+    position:sticky; top:0; z-index:20;
+    display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+    padding:12px 18px;
+    background:rgba(12,8,24,.85); backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  .logo-pill{
+    display:inline-flex; align-items:center; gap:8px;
+    border:1.5px solid var(--cy); border-radius:10px;
+    padding:6px 12px;
+    box-shadow:0 0 10px rgba(94,231,255,.35);
+    font-family:'DungGeunMo','Galmuri11',ui-monospace,monospace;
+    font-size:13px; letter-spacing:.5px; white-space:nowrap;
+  }
+  .logo-pill .dot{color:var(--pk); text-shadow:0 0 6px rgba(255,45,149,.8)}
+  header h1{font-size:15px; margin:0; font-weight:700}
+  header .sub{color:var(--sub); font-size:12px; margin-top:2px}
+  .spacer{flex:1}
+
+  /* 모드 탭 */
+  .mode-tabs{display:flex; border:1.5px solid var(--line); border-radius:11px; overflow:hidden}
+  .mode-tabs button{
+    appearance:none; border:none; background:transparent; color:var(--sub);
+    padding:10px 18px; font-size:13.5px; font-weight:700; cursor:pointer; transition:.15s;
+  }
+  .mode-tabs button.active[data-mode="chzzk"]{
+    background:rgba(94,231,255,.16); color:var(--txt);
+    box-shadow:inset 0 0 12px rgba(94,231,255,.2); text-shadow:0 0 8px rgba(94,231,255,.6);
+  }
+  .mode-tabs button.active[data-mode="weflab"]{
+    background:rgba(255,45,149,.16); color:var(--txt);
+    box-shadow:inset 0 0 12px rgba(255,45,149,.2); text-shadow:0 0 8px rgba(255,45,149,.6);
+  }
+
+  .btn{
+    appearance:none; border:1px solid var(--line); background:var(--panel2);
+    color:var(--txt); border-radius:9px; padding:9px 14px; font-size:13px;
+    cursor:pointer; transition:.15s; white-space:nowrap;
+  }
+  .btn:hover{border-color:var(--cy); box-shadow:0 0 10px rgba(94,231,255,.25)}
+  .btn.primary{
+    border:1.5px solid var(--cy); font-weight:700;
+    background:linear-gradient(135deg, rgba(94,231,255,.14), rgba(255,45,149,.14));
+    box-shadow:0 0 12px rgba(94,231,255,.3);
+  }
+  .btn.primary:hover{box-shadow:0 0 18px rgba(94,231,255,.5)}
+  .btn:focus-visible{outline:2px solid var(--cy); outline-offset:2px}
+
+  /* ----- 본문 2단 레이아웃 ----- */
+  main{
+    display:grid; grid-template-columns:410px 1fr;
+    height:calc(100vh - 63px);
+  }
+
+  /* ----- 왼쪽: 컨트롤 패널 ----- */
+  #controls{
+    overflow-y:auto; padding:14px 14px 40px;
+    border-right:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(21,15,38,.6), rgba(12,8,24,.2));
+  }
+  details.sec{
+    background:var(--panel); border:1px solid var(--line);
+    border-radius:12px; margin-bottom:10px; overflow:hidden;
+  }
+  details.sec summary{
+    cursor:pointer; list-style:none; user-select:none;
+    padding:11px 14px; font-weight:700; font-size:13.5px;
+    display:flex; align-items:center; gap:8px;
+    border-bottom:1px solid transparent;
+  }
+  details.sec[open] summary{border-bottom-color:var(--line)}
+  details.sec summary::-webkit-details-marker{display:none}
+  details.sec summary::after{
+    content:"▾"; margin-left:auto; color:var(--cy); transition:.15s;
+  }
+  details.sec:not([open]) summary::after{transform:rotate(-90deg)}
+  .sec-body{padding:10px 14px 14px}
+
+  .ctl{display:grid; grid-template-columns:1fr; gap:6px; padding:9px 0; border-bottom:1px dashed rgba(255,255,255,.06)}
+  .ctl:last-child{border-bottom:none}
+  .ctl .lbl{display:flex; align-items:center; justify-content:space-between; gap:8px}
+  .ctl .lbl span.name{color:var(--txt); font-size:13px}
+  .ctl .lbl span.hint{color:var(--sub); font-size:11px; text-align:right}
+  .ctl .row{display:flex; align-items:center; gap:10px}
+  input[type=range]{flex:1; accent-color:var(--cy); height:22px}
+  .num{
+    width:74px; background:#0e0a1e; color:var(--txt);
+    border:1px solid var(--line); border-radius:7px;
+    padding:5px 7px; font-size:12.5px; text-align:right;
+  }
+  .num:focus{outline:none; border-color:var(--cy)}
+  .unit{color:var(--sub); font-size:11.5px; width:26px}
+  input[type=color]{
+    width:44px; height:30px; padding:0; border:1px solid var(--line);
+    border-radius:7px; background:#0e0a1e; cursor:pointer; flex:none;
+  }
+  .hexlbl{font-family:ui-monospace,Consolas,monospace; font-size:12px; color:var(--sub)}
+  select{
+    flex:1; background:#0e0a1e; color:var(--txt); border:1px solid var(--line);
+    border-radius:7px; padding:7px 8px; font-size:12.5px;
+  }
+  /* 토글 스위치 */
+  .switch{position:relative; width:42px; height:22px; flex:none}
+  .switch input{opacity:0; width:0; height:0}
+  .slider-tg{
+    position:absolute; inset:0; background:#241c40; border:1px solid var(--line);
+    border-radius:22px; transition:.15s; cursor:pointer;
+  }
+  .slider-tg::before{
+    content:""; position:absolute; width:15px; height:15px; left:3px; top:2.5px;
+    background:#8a90ad; border-radius:50%; transition:.15s;
+  }
+  .switch input:checked + .slider-tg{background:rgba(94,231,255,.25); border-color:var(--cy)}
+  .switch input:checked + .slider-tg::before{transform:translateX(19px); background:var(--cy); box-shadow:0 0 6px rgba(94,231,255,.8)}
+
+  .css-view{width:100%; height:220px; background:#0a0716; color:#bfe9ff;
+    border:1px solid var(--line); border-radius:9px; padding:10px;
+    font-family:ui-monospace,Consolas,monospace; font-size:11px; line-height:1.5; resize:vertical}
+  .mini-note{color:var(--sub); font-size:11.5px; line-height:1.6; margin-top:8px}
+  .mini-note b{color:var(--txt)}
+
+  /* ----- 오른쪽: 미리보기 ----- */
+  #preview-pane{display:flex; flex-direction:column; min-width:0}
+  .pv-toolbar{
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    padding:10px 14px; border-bottom:1px solid var(--line);
+    background:rgba(21,15,38,.5);
+  }
+  .seg{display:flex; border:1px solid var(--line); border-radius:9px; overflow:hidden}
+  .seg button{
+    appearance:none; border:none; background:transparent; color:var(--sub);
+    padding:8px 13px; font-size:12.5px; cursor:pointer; transition:.15s;
+  }
+  .seg button.active{background:rgba(94,231,255,.16); color:var(--txt); box-shadow:inset 0 0 8px rgba(94,231,255,.15)}
+  .pv-label{color:var(--sub); font-size:12px}
+  #pv-frame{flex:1; width:100%; border:none; display:block; background:transparent}
+  .pv-foot{
+    padding:7px 14px; color:var(--sub); font-size:11.5px;
+    border-top:1px solid var(--line); background:rgba(12,8,24,.6);
+  }
+
+  /* 토스트 */
+  #toast{
+    position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(20px);
+    background:rgba(10,7,22,.95); border:1.5px solid var(--cy); color:var(--txt);
+    border-radius:10px; padding:11px 18px; font-size:13px; opacity:0;
+    pointer-events:none; transition:.25s; z-index:50;
+    box-shadow:0 0 16px rgba(94,231,255,.4); max-width:90vw; text-align:center;
+  }
+  #toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+
+  /* 반응형 */
+  @media (max-width: 980px){
+    main{grid-template-columns:1fr; height:auto}
+    #preview-pane{order:-1; height:60vh; border-bottom:1px solid var(--line)}
+    #controls{border-right:none; max-height:none}
+    header h1{font-size:13px}
+    header .sub{display:none}
+    .logo-pill{font-size:11px}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="logo-pill"><span class="dot">♥</span> OVERLAY LAB</span>
+  <div>
+    <h1>치지직 &amp; 위플랩 커스텀 CSS 커스터마이저</h1>
+    <div class="sub">v2 · 값을 바꾸면 미리보기에 즉시 반영 · 모드별 CSS 복사/다운로드</div>
+  </div>
+  <div class="mode-tabs" id="mode-tabs">
+    <button data-mode="chzzk" class="active">치지직 모드</button>
+    <button data-mode="weflab">위플랩 모드</button>
+  </div>
+  <div class="spacer"></div>
+  <button class="btn" id="btn-reset">↺ 기본값</button>
+  <button class="btn" id="btn-download">⬇ .css 다운로드</button>
+  <button class="btn primary" id="btn-copy">📋 CSS 복사</button>
+</header>
+
+<main>
+  <!-- ========== 왼쪽: 조절 패널 ========== -->
+  <aside id="controls">
+    <div id="sections-chzzk"></div>
+    <div id="sections-weflab" style="display:none"></div>
+
+    <details class="sec">
+      <summary>📄 생성된 CSS 미리보기</summary>
+      <div class="sec-body">
+        <textarea class="css-view" id="css-view" readonly spellcheck="false"></textarea>
+        <div class="mini-note">복사 버튼이 동작하지 않는 환경에서는 이 칸을 클릭 → 전체 선택(Ctrl+A) → 복사(Ctrl+C) 하세요.</div>
+      </div>
+    </details>
+
+    <div class="mini-note" id="apply-note"></div>
+  </aside>
+
+  <!-- ========== 오른쪽: 미리보기 ========== -->
+  <section id="preview-pane">
+    <div class="pv-toolbar">
+      <span class="pv-label">배경 테스트</span>
+      <div class="seg" id="bg-seg">
+        <button data-bg="dark" class="active">어두움</button>
+        <button data-bg="mid">중간</button>
+        <button data-bg="light">밝음</button>
+      </div>
+      <span class="pv-label" style="margin-left:6px">채팅 시뮬레이션</span>
+      <button class="btn" id="btn-auto">⏸ 자동 일시정지</button>
+      <button class="btn" id="btn-add">＋ 채팅 추가</button>
+    </div>
+    <iframe id="pv-frame" title="채팅 오버레이 미리보기"></iframe>
+    <div class="pv-foot" id="pv-foot"></div>
+  </section>
+</main>
+
+<div id="toast">✓ 준비 완료</div>
+
+<script>
+/* =========================================================
+   0) 모드 · 공용 상수
+========================================================= */
+let mode = 'chzzk';   /* 'chzzk' | 'weflab' */
+
+const FONT_STACK = {
+  g14:"'Galmuri14', 'DungGeunMo', sans-serif",
+  g11:"'Galmuri11', 'Galmuri14', sans-serif",
+  dgm:"'DungGeunMo', 'Galmuri14', sans-serif",
+  ptd:"'Pretendard', 'Noto Sans KR', sans-serif",
+  noto:"'Noto Sans KR', 'Pretendard', sans-serif",
+  gms:"'GmarketSans', 'Malgun Gothic', sans-serif",
+  sys:"'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif"
+};
+const FONT_OPTS = [
+  {v:'g14', label:'갈무리14 · 픽셀+가독성 (권장 본문)'},
+  {v:'g11', label:'갈무리11 · 더 작고 촘촘한 도트'},
+  {v:'dgm', label:'둥근모꼴+Fixedsys · PC통신 감성 (권장 닉네임)'},
+  {v:'ptd', label:'프리텐다드 · 완성형 11,172자 · 고가독 (OFL)'},
+  {v:'noto', label:'본고딕 Noto Sans KR · 완성형 11,172자 (OFL)'},
+  {v:'gms', label:'G마켓 산스 · 위플랩 기본 고딕'},
+  {v:'sys', label:'시스템 고딕 · 웹폰트 미사용'}
+];
+const ALIGN_OPTS = [
+  {v:'start',  label:'왼쪽 정렬 (start)'},
+  {v:'center', label:'중앙 정렬 (center)'},
+  {v:'end',    label:'오른쪽 정렬 (end)'}
+];
+const CHALIGN_OPTS = [
+  {v:'flex-start', label:'왼쪽 정렬'},
+  {v:'center',     label:'중앙 정렬'},
+  {v:'flex-end',   label:'오른쪽 정렬'}
+];
+const TXTALIGN_OPTS = [
+  {v:'left',   label:'왼쪽'},
+  {v:'center', label:'중앙'},
+  {v:'right',  label:'오른쪽'}
+];
+const DIR_OPTS = [
+  {v:'up',    label:'아래에서 위로'},
+  {v:'down',  label:'위에서 아래로'},
+  {v:'left',  label:'왼쪽에서'},
+  {v:'right', label:'오른쪽에서'}
+];
+const EASE_OPTS = [
+  {v:'cubic-bezier(0.22, 0.9, 0.3, 1)', label:'부드러운 감속 (기본)'},
+  {v:'cubic-bezier(0.2, 1.6, 0.4, 1)',  label:'바운스 · 통통'},
+  {v:'ease',        label:'표준 (ease)'},
+  {v:'ease-in',     label:'급가속 (ease-in)'},
+  {v:'ease-in-out', label:'완급 (ease-in-out)'},
+  {v:'linear',      label:'일정 속도 (linear)'}
+];
+const NICKMODE_OPTS = [
+  {v:'stack',  label:'2단 표시 · 닉네임 위 + 본문 아래 (기본)'},
+  {v:'inline', label:'한 줄 표시 · 닉네임과 본문 나란히'},
+  {v:'hidden', label:'닉네임 숨김 · 본문만 표시'},
+  {v:'badge',  label:'플로팅 배지 · 말풍선 위 상자'}
+];
+const WF_NICKSTYLE_OPTS = [
+  {v:'inline', label:'인라인 · 말풍선 안에 표시 (기본)'},
+  {v:'badge',  label:'플로팅 배지 · 말풍선 위 상자'}
+];
+const CH_ANIMTYPE_OPTS = [
+  {v:'unfold', label:'펼침 · 이전 채팅을 부드럽게 밀어올림 (기본)'},
+  {v:'slide',  label:'슬라이드 · 방향 지정'},
+  {v:'pop',    label:'팝 바운스 · 통통 튀며 등장'},
+  {v:'fade',   label:'페이드 · 서서히 나타남'},
+  {v:'none',   label:'없음 · 즉시 표시'}
+];
+const WF_ANIM_OPTS = [
+  {v:'weflab', label:'위플랩 표준 · 펼침+상승+페이드 4단 (고유 타이밍)'},
+  {v:'poing',  label:'통통 바운스 · popSlide'},
+  {v:'slide',  label:'커스텀 슬라이드 · 방향/거리/이징 조절'},
+  {v:'fade',   label:'페이드 · 서서히 나타남'},
+  {v:'none',   label:'없음 · 즉시 표시'}
+];
+
+/* =========================================================
+   1) 치지직 상태
+========================================================= */
+const DEF_C = {
+  cyan:'#5ee7ff', cyanAlp:100, pink:'#ff2d95', pinkAlp:100,
+  bg1:'#1a0b2e', bg1A:62, bg2:'#070616', bg2A:72,
+  msgC:'#f2f6ff', msgCAlp:100, nickC:'#ff6cbe', nickCAlp:100,
+  borderW:1.5, borderA:80, radius:12, gap:14, maxW:86, blur:6,
+  glowSize:10, glowA:35, bloomA:14,
+  msgFont:'g14', msgSize:24, lineH:1.55, msgGlow:30, txtAlign:'left',
+  nickFont:'dgm', nickSize:21, nickGlow:55,
+  nickMode:'stack', nickSep:false, nickForce:true,
+  nickBoxBg:'#ff2d95', nickBoxA:90, nickBoxR:14, nickTop:-20,
+  headerPinkA:16, headerCyanA:6, headerLineA:25,
+  badgeSize:22, emoteSize:34,
+  chAlign:'flex-start', tilt:7, persp:1100, fade:34, padX:16,
+  animType:'unfold', animDir:'up', animT:0.28, animDist:12, animOpa:0,
+  animEase:'cubic-bezier(0.22, 0.9, 0.3, 1)', animH:240,
+  fadeOutOn:false, fadeOutT:8,
+  scan:true, gloss:true
+};
+let SC = Object.assign({}, DEF_C);
+
+const SECTIONS_C = [
+  {title:'🎨 색상 팔레트 (RGBA)', open:true, items:[
+    {k:'cyan',  ak:'cyanAlp', t:'rgba', label:'네온 하늘색 (#5ee7ff 계열)', hint:'테두리·글로우 · 구 "네온 시안"'},
+    {k:'pink',  ak:'pinkAlp', t:'rgba', label:'네온 핫핑크 (#ff2d95 계열)', hint:'헤더 띠·블룸 · 구 "네온 핑크"'},
+    {k:'bg1',   ak:'bg1A', t:'rgba', label:'말풍선 배경 · 위'},
+    {k:'bg2',   ak:'bg2A', t:'rgba', label:'말풍선 배경 · 아래'},
+    {k:'msgC',  ak:'msgCAlp', t:'rgba', label:'본문 글자색'},
+    {k:'nickC', ak:'nickCAlp', t:'rgba', label:'닉네임 글자색'}
+  ]},
+  {title:'💬 말풍선', open:true, items:[
+    {k:'borderW', t:'range', label:'테두리 두께', min:0, max:4, step:0.5, unit:'px'},
+    {k:'borderA', t:'range', label:'테두리 불투명도', min:0, max:100, step:1, unit:'%'},
+    {k:'radius',  t:'range', label:'모서리 둥글기', min:0, max:24, step:1, unit:'px'},
+    {k:'gap',     t:'range', label:'말풍선 사이 간격', min:0, max:40, step:1, unit:'px'},
+    {k:'maxW',    t:'range', label:'말풍선 최대 너비', min:40, max:100, step:1, unit:'%'},
+    {k:'blur',    t:'range', label:'배경 블러(유리 강도)', min:0, max:16, step:1, unit:'px'},
+    {k:'glowSize',t:'range', label:'하늘색 글로우 크기', min:0, max:30, step:1, unit:'px'},
+    {k:'glowA',   t:'range', label:'하늘색 글로우 강도', min:0, max:100, step:1, unit:'%'},
+    {k:'bloomA',  t:'range', label:'핫핑크 블룸 강도', min:0, max:100, step:1, unit:'%'}
+  ]},
+  {title:'🔤 글자', open:false, items:[
+    {k:'msgFont', t:'select', label:'본문 폰트', opts:FONT_OPTS},
+    {k:'msgSize', t:'range', label:'본문 크기', min:14, max:40, step:1, unit:'px'},
+    {k:'lineH',   t:'range', label:'행간(줄 간격)', min:1.1, max:2.2, step:0.05, unit:''},
+    {k:'msgGlow', t:'range', label:'본문 발광 강도', min:0, max:100, step:1, unit:'%'},
+    {k:'txtAlign',t:'select', label:'말풍선 내부 텍스트 정렬', opts:TXTALIGN_OPTS},
+    {k:'nickFont',t:'select', label:'닉네임 폰트', opts:FONT_OPTS},
+    {k:'nickSize',t:'range', label:'닉네임 크기', min:12, max:32, step:1, unit:'px'},
+    {k:'nickGlow',t:'range', label:'닉네임 발광 강도', min:0, max:100, step:1, unit:'%'}
+  ]},
+  {title:'🏷️ 닉네임 표시 · 헤더 띠', open:true, items:[
+    {k:'nickMode',    t:'select', label:'닉네임 표시 방식', opts:NICKMODE_OPTS, hint:'헤더 띠는 2단 전용'},
+    {k:'nickSep',     t:'toggle', label:"닉네임 뒤 ':' 구분기호"},
+    {k:'nickForce',   t:'toggle', label:'닉네임 색 강제 통일', hint:'끄면 플랫폼 지정색 유지'},
+    {k:'headerPinkA', t:'range', label:'헤더 그라데이션 · 왼쪽 핫핑크 강도', min:0, max:60, step:1, unit:'%'},
+    {k:'headerCyanA', t:'range', label:'헤더 그라데이션 · 오른쪽 하늘색 강도', min:0, max:60, step:1, unit:'%'},
+    {k:'headerLineA', t:'range', label:'헤더 구분선 불투명도', min:0, max:100, step:1, unit:'%'},
+    {k:'nickBoxBg',   ak:'nickBoxA', t:'rgba', label:'플로팅 배지 상자 색', hint:'배지 방식 전용'},
+    {k:'nickBoxR',    t:'range', label:'플로팅 배지 둥글기', min:0, max:30, step:1, unit:'px'},
+    {k:'nickTop',     t:'range', label:'플로팅 배지 세로 위치', min:-40, max:0, step:1, unit:'px'}
+  ]},
+  {title:'😀 뱃지 · 이모티콘', open:false, items:[
+    {k:'badgeSize', t:'range', label:'뱃지 크기', min:14, max:36, step:1, unit:'px'},
+    {k:'emoteSize', t:'range', label:'이모티콘 크기', min:20, max:60, step:1, unit:'px'}
+  ]},
+  {title:'🎬 레이아웃 · 3D', open:false, items:[
+    {k:'chAlign', t:'select', label:'채팅창 화면 정렬', opts:CHALIGN_OPTS},
+    {k:'tilt',  t:'range', label:'3D 기울기 (스타워즈)', min:0, max:14, step:0.5, unit:'°'},
+    {k:'persp', t:'range', label:'원근 거리(작을수록 과장)', min:500, max:2000, step:50, unit:'px'},
+    {k:'fade',  t:'range', label:'상단 페이드 완료 지점', min:10, max:70, step:1, unit:'%'},
+    {k:'padX',  t:'range', label:'화면 좌우 여백', min:0, max:60, step:1, unit:'px'}
+  ]},
+  {title:'✨ 애니메이션 · 질감', open:false, items:[
+    {k:'animType', t:'select', label:'등장 애니메이션 종류', opts:CH_ANIMTYPE_OPTS, hint:'펼침 외에는 이전 채팅이 즉시 이동'},
+    {k:'animDir',  t:'select', label:'등장 방향', opts:DIR_OPTS},
+    {k:'animT',    t:'range', label:'등장 속도', min:0.1, max:1.2, step:0.02, unit:'s'},
+    {k:'animDist', t:'range', label:'이동 거리', min:0, max:120, step:2, unit:'px'},
+    {k:'animOpa',  t:'range', label:'시작 투명도(0=투명에서 시작)', min:0, max:100, step:1, unit:'%'},
+    {k:'animEase', t:'select', label:'이징(가감속 곡선)', opts:EASE_OPTS},
+    {k:'animH',    t:'range', label:'등장 시 최대 높이 (펼침 전용)', min:120, max:500, step:10, unit:'px'},
+    {k:'fadeOutOn',t:'toggle', label:'채팅 자동 사라짐'},
+    {k:'fadeOutT', t:'range', label:'사라지기까지 시간', min:1, max:30, step:1, unit:'s'},
+    {k:'scan',  t:'toggle', label:'CRT 스캔라인 질감'},
+    {k:'gloss', t:'toggle', label:'상단 유리 하이라이트'}
+  ]}
+];
+
+/* =========================================================
+   2) 위플랩 상태
+========================================================= */
+const DEF_W = {
+  wfNeon:'#5ee7ff', wfNeonAlp:100, wfNeon2:'#ff2d95', wfNeon2Alp:100,
+  wfBg:'#140b28', wfBgA:70, wfBg2:'#070616', wfBg2A:72,
+  wfMsgC:'#f2f6ff', wfMsgCAlp:100, wfNickC:'#ff6cbe', wfNickCAlp:100,
+  wfBorderW:1.5, wfBorderA:80, wfRadius:0.7, wfGap:10, wfMaxW:86, wfBlur:0,
+  wfGlowSize:12, wfNeonA:45, wfBloomA:18, wfPadY:0.7, wfPadXIn:1.1,
+  wfFont:'g14', wfFontSize:22, wfNickSize:20, wfLineH:1.4, wfTextGlow:30, wfTxtAlign:'left',
+  wfNickFont:'dgm', wfNickGlow:55,
+  wfNickShow:true, wfNickStyle:'inline', wfNickSep:false, wfNickForce:true,
+  wfNickBoxBg:'#ff2d95', wfNickBoxA:90, wfNickBoxR:14, wfNickTop:-18,
+  wfEmoteSize:26, wfIconShow:true,
+  wfAlign:'start', wfMask:true, wfMaskStop:80, wfFadeOn:false, wfFadeT:5,
+  wfTilt:0, wfPersp:1100,
+  wfAnim:'weflab', wfAnimDir:'up', wfAnimT:0.5, wfAnimDist:24, wfAnimOpa:0,
+  wfAnimEase:'cubic-bezier(0.22, 0.9, 0.3, 1)',
+  wfScan:false, wfGloss:false,
+  wfStBg:'#ff2d95', wfStBgA:82, wfStNeon:'#ff2d95', wfStNeonAlp:100, wfStGlowA:50,
+  wfStNickC:'#1a0b2e', wfStNickCAlp:100, wfStMsgC:'#ffffff', wfStMsgCAlp:100
+};
+let SW = Object.assign({}, DEF_W);
+
+const SECTIONS_W = [
+  {title:'🎨 색상 팔레트 (RGBA)', open:true, items:[
+    {k:'wfNeon',  ak:'wfNeonAlp', t:'rgba', label:'네온 하늘색 (#5ee7ff 계열)', hint:'테두리·글로우'},
+    {k:'wfNeon2', ak:'wfNeon2Alp', t:'rgba', label:'네온 핫핑크 (#ff2d95 계열)', hint:'닉네임 발광·블룸'},
+    {k:'wfBg',    ak:'wfBgA', t:'rgba', label:'말풍선 배경 · 위 '},
+    {k:'wfBg2',   ak:'wfBg2A', t:'rgba', label:'말풍선 배경 · 아래 '},
+    {k:'wfMsgC',  ak:'wfMsgCAlp', t:'rgba', label:'본문 글자색 (--메시지-색상)'},
+    {k:'wfNickC', ak:'wfNickCAlp', t:'rgba', label:'닉네임 글자색 (--닉네임-색상)'}
+  ]},
+  {title:'💬 말풍선 · 네온', open:true, items:[
+    {k:'wfBorderW', t:'range', label:'테두리 두께', min:0, max:4, step:0.5, unit:'px'},
+    {k:'wfBorderA', t:'range', label:'테두리 불투명도', min:0, max:100, step:1, unit:'%'},
+    {k:'wfRadius',  t:'range', label:'모서리 둥글기 (--모서리-둥글기)', min:0.2, max:2, step:0.05, unit:'em'},
+    {k:'wfGap',     t:'range', label:'채팅 간격 (--채팅-간격)', min:0, max:40, step:1, unit:'px'},
+    {k:'wfMaxW',    t:'range', label:'말풍선 최대 너비', min:40, max:100, step:1, unit:'%'},
+    {k:'wfBlur',    t:'range', label:'배경 블러(유리 강도)', min:0, max:16, step:1, unit:'px'},
+    {k:'wfGlowSize',t:'range', label:'네온 글로우 크기', min:0, max:30, step:1, unit:'px'},
+    {k:'wfNeonA',   t:'range', label:'하늘색 글로우 강도', min:0, max:100, step:1, unit:'%'},
+    {k:'wfBloomA',  t:'range', label:'핫핑크 블룸 강도', min:0, max:100, step:1, unit:'%'},
+    {k:'wfPadY',    t:'range', label:'말풍선 내부 여백 · 상하', min:0.2, max:1.5, step:0.05, unit:'em'},
+    {k:'wfPadXIn',  t:'range', label:'말풍선 내부 여백 · 좌우', min:0.4, max:2, step:0.05, unit:'em'}
+  ]},
+  {title:'🔤 글자', open:false, items:[
+    {k:'wfFont',    t:'select', label:'본문 폰트 (--폰트-이름)', opts:FONT_OPTS},
+    {k:'wfFontSize',t:'range', label:'본문 크기 (--폰트-사이즈)', min:14, max:40, step:1, unit:'px'},
+    {k:'wfLineH',   t:'range', label:'행간(줄 간격)', min:1.1, max:2.2, step:0.05, unit:'em'},
+    {k:'wfTextGlow',t:'range', label:'본문 발광 강도', min:0, max:100, step:1, unit:'%'},
+    {k:'wfTxtAlign',t:'select', label:'말풍선 내부 텍스트 정렬', opts:TXTALIGN_OPTS},
+    {k:'wfNickFont',t:'select', label:'닉네임 폰트 (--닉네임-폰트)', opts:FONT_OPTS},
+    {k:'wfNickSize',t:'range', label:'닉네임 크기 (--닉네임-사이즈)', min:12, max:32, step:1, unit:'px'},
+    {k:'wfNickGlow',t:'range', label:'닉네임 발광 강도', min:0, max:100, step:1, unit:'%'}
+  ]},
+  {title:'🏷️ 닉네임 표시', open:true, items:[
+    {k:'wfNickShow', t:'toggle', label:'닉네임 표시 (--닉네임-표시)'},
+    {k:'wfNickStyle',t:'select', label:'닉네임 스타일', opts:WF_NICKSTYLE_OPTS, hint:'배지 스타일은 채팅 간격을 넉넉히'},
+    {k:'wfNickSep',  t:'toggle', label:"닉네임 뒤 ':' 구분기호"},
+    {k:'wfNickForce',t:'toggle', label:'닉네임 색 강제 통일', hint:'끄면 플랫폼 지정색 유지'},
+    {k:'wfNickBoxBg',ak:'wfNickBoxA', t:'rgba', label:'배지 상자 배경색', hint:'배지 스타일 전용'},
+    {k:'wfNickBoxR', t:'range', label:'배지 상자 둥글기', min:0, max:30, step:1, unit:'px'},
+    {k:'wfNickTop',  t:'range', label:'배지 세로 위치(위로 뜨는 정도)', min:-40, max:0, step:1, unit:'px'}
+  ]},
+  {title:'😀 이모티콘 · 아이콘', open:false, items:[
+    {k:'wfEmoteSize', t:'range', label:'이모티콘 크기', min:16, max:60, step:1, unit:'px'},
+    {k:'wfIconShow',  t:'toggle', label:'플랫폼·뱃지 아이콘 표시'}
+  ]},
+  {title:'🎛️ 위플랩 전용 동작', open:true, items:[
+    {k:'wfAlign',   t:'select', label:'채팅창 정렬 (--채팅창-정렬)', opts:ALIGN_OPTS},
+    {k:'wfMask',    t:'toggle', label:'상단 페이드 마스크 (.chat_area)'},
+    {k:'wfMaskStop',t:'range', label:'페이드 시작 지점(높을수록 위에서만)', min:50, max:95, step:1, unit:'%'},
+    {k:'wfFadeOn',  t:'toggle', label:'채팅 자동 사라짐 (--페이드-아웃)'},
+    {k:'wfFadeT',   t:'range', label:'사라지기까지 시간 (--페이드-아웃-시간)', min:1, max:30, step:1, unit:'s'}
+  ]},
+  {title:'🎬 레이아웃 · 3D', open:false, items:[
+    {k:'wfTilt',  t:'range', label:'3D 기울기 (0=사용 안 함)', min:0, max:14, step:0.5, unit:'°'},
+    {k:'wfPersp', t:'range', label:'원근 거리(작을수록 과장)', min:500, max:2000, step:50, unit:'px'}
+  ]},
+  {title:'✨ 애니메이션 · 질감', open:false, items:[
+    {k:'wfAnim',     t:'select', label:'등장 애니메이션', opts:WF_ANIM_OPTS, hint:'표준 4단은 고유 타이밍 사용'},
+    {k:'wfAnimDir',  t:'select', label:'등장 방향 (커스텀 슬라이드용)', opts:DIR_OPTS},
+    {k:'wfAnimT',    t:'range', label:'등장 속도 (통통·슬라이드·페이드)', min:0.1, max:1.2, step:0.02, unit:'s'},
+    {k:'wfAnimDist', t:'range', label:'이동 거리 (커스텀 슬라이드용)', min:0, max:120, step:2, unit:'px'},
+    {k:'wfAnimOpa',  t:'range', label:'시작 투명도(0=투명에서 시작)', min:0, max:100, step:1, unit:'%'},
+    {k:'wfAnimEase', t:'select', label:'이징 (커스텀 슬라이드·페이드용)', opts:EASE_OPTS},
+    {k:'wfScan', t:'toggle', label:'CRT 스캔라인 질감'},
+    {k:'wfGloss',t:'toggle', label:'상단 유리 하이라이트'}
+  ]},
+  {title:'⭐ 스트리머 메시지 (.streamer)', open:false, items:[
+    {k:'wfStBg',   ak:'wfStBgA', t:'rgba', label:'스트리머 배경색'},
+    {k:'wfStNeon', ak:'wfStNeonAlp', t:'rgba', label:'스트리머 테두리·글로우 색'},
+    {k:'wfStGlowA',t:'range', label:'스트리머 글로우 강도', min:0, max:100, step:1, unit:'%'},
+    {k:'wfStNickC',ak:'wfStNickCAlp', t:'rgba', label:'스트리머 닉네임 색'},
+    {k:'wfStMsgC', ak:'wfStMsgCAlp', t:'rgba', label:'스트리머 메시지 색'}
+  ]}
+];
+
+/* =========================================================
+   3) 유틸
+========================================================= */
+function hexToRgba(hex, a){
+  let h = hex.replace('#','');
+  if (h.length === 3) h = h.split('').map(function(c){return c+c;}).join('');
+  const n = parseInt(h, 16);
+  const r = (n>>16)&255, g = (n>>8)&255, b = n&255;
+  a = Math.max(0, Math.min(1, a));
+  return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + fmt(a) + ')';
+}
+function fmt(v){ return Number((+v).toFixed(2)); }
+function dirOffset(dir, dist){
+  if (dir === 'down')  return 'translateY(-' + dist + 'px)';
+  if (dir === 'left')  return 'translateX(-' + dist + 'px)';
+  if (dir === 'right') return 'translateX(' + dist + 'px)';
+  return 'translateY(' + dist + 'px)';   /* up: 아래에서 위로 */
+}
+
+/* 공통 웹폰트 임포트 블록 (생성 CSS용) */
+const FONT_IMPORTS = "@import url('https://cdn.jsdelivr.net/npm/galmuri@latest/dist/galmuri.css');\n" +
+"@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css');\n" +
+"@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');\n" +
+"\n" +
+"@font-face {\n" +
+"  font-family: 'DungGeunMo';\n" +
+"  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/DungGeunMo.woff') format('woff');\n" +
+"  font-weight: normal;\n" +
+"  font-display: swap;\n" +
+"}\n" +
+"@font-face {\n" +
+"  font-family: 'GmarketSans';\n" +
+"  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');\n" +
+"  font-weight: 400;\n" +
+"  font-display: swap;\n" +
+"}";
+
+/* =========================================================
+   4-A) 치지직용 CSS 생성
+========================================================= */
+function buildChzzkCSS(){
+  const S = SC;
+  const cy = function(a){ return hexToRgba(S.cyan, a * S.cyanAlp/100); };
+  const pk = function(a){ return hexToRgba(S.pink, a * S.pinkAlp/100); };
+  const bg1 = hexToRgba(S.bg1, S.bg1A/100);
+  const bg2 = hexToRgba(S.bg2, S.bg2A/100);
+  const msgCol  = hexToRgba(S.msgC, S.msgCAlp/100);
+  const nickCol = hexToRgba(S.nickC, S.nickCAlp/100);
+  const fadeMid = Math.round(S.fade * 0.47);
+  const headerR = Math.max(S.radius - 1, 0);
+  const nm = S.nickMode;
+
+  const layers = [];
+  if (S.gloss) layers.push('linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0) 34%)');
+  if (S.scan)  layers.push('repeating-linear-gradient(0deg, rgba(255,255,255,0.035) 0px, rgba(255,255,255,0.035) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 3px)');
+  layers.push('linear-gradient(165deg, var(--night-bg-1) 0%, var(--night-bg-2) 100%)');
+
+  /* 닉네임 표시 방식 분기 */
+  const wrapPad  = (nm === 'inline') ? '9px 15px' : '0';
+  const txtDisp  = (nm === 'inline') ? 'inline' : 'block';
+  const txtPad   = (nm === 'inline') ? '0' : '8px 15px 10px 15px';
+  const iconDisp = (nm === 'stack') ? 'block' : 'inline-block';
+
+  let headerCSS;
+  if (nm === 'stack'){
+    headerCSS = `/* ---------- [6] 닉네임 줄 (상단 헤더 · 2단 표시) ---------- */
+[class*=_wrapper_] > [class*=_container_] {
+  display: block;
+  align-items: center;
+  margin-right: 0 !important;
+  padding: 7px 14px 5px 14px !important;
+  border-radius: ${headerR}px ${headerR}px 0 0;
+  background: linear-gradient(90deg, ${pk(S.headerPinkA/100)} 0%, ${cy(S.headerCyanA/100)} 100%);
+  border-bottom: 1px solid ${cy(S.headerLineA/100)};
+}`;
+  } else if (nm === 'inline'){
+    headerCSS = `/* ---------- [6] 닉네임 (한 줄 표시 · 본문과 나란히) ---------- */
+[class*=_wrapper_] > [class*=_container_] {
+  display: inline !important;
+  padding: 0 !important;
+  margin-right: 8px !important;
+  background: none !important;
+  border-bottom: none !important;
+  border-radius: 0;
+}`;
+  } else if (nm === 'badge'){
+    headerCSS = `/* ---------- [6] 닉네임 플로팅 배지 ---------- */
+[class*=_wrapper_] > [class*=_container_] {
+  display: inline-block !important;
+  position: absolute !important;
+  top: ${S.nickTop}px;
+  left: 10px;
+  z-index: 2;
+  padding: 2px 12px !important;
+  margin-right: 0 !important;
+  background: ${hexToRgba(S.nickBoxBg, S.nickBoxA/100)} !important;
+  border-radius: ${S.nickBoxR}px;
+  border: 1px solid ${cy(0.45)};
+  border-bottom: 1px solid ${cy(0.45)} !important;
+  box-shadow: 0 0 8px ${hexToRgba(S.nickBoxBg, 0.45)};
+}`;
+  } else {
+    headerCSS = `/* ---------- [6] 닉네임 숨김 (본문만 표시) ---------- */
+[class*=_wrapper_] > [class*=_container_] {
+  display: none !important;
+}`;
+  }
+
+  /* 닉네임 ':' 구분기호 */
+  const sepCSS = S.nickSep ? `
+/* 닉네임 뒤 ':' 구분기호 */
+[class*=_nickname_]::after {
+  content: ":";
+  margin-left: 1px;
+}
+` : '';
+
+  /* 닉네임 색 강제 통일 여부 */
+  const nickSelector = S.nickForce
+    ? `[class*=_nickname_],
+[class*=_container_][class*=_has_gradient_] [class*=_nickname_]`
+    : `[class*=_nickname_]`;
+  const nickColorLines = S.nickForce
+    ? `  color: var(--nick-color) !important;
+  background: none !important;
+` : '';
+  const nickTextSafety = S.nickForce
+    ? `/* 닉네임 안쪽 텍스트만 다시 닉네임 색으로 (안전망보다 아래 유지) */
+[class*=_nickname_] [class*=_text_] {
+  color: var(--nick-color) !important;
+  filter: none !important;
+}`
+    : `/* 닉네임 색 강제 통일 꺼짐: 플랫폼 지정색 유지 (발광 중복만 제거) */
+[class*=_nickname_] [class*=_text_] {
+  filter: none !important;
+}`;
+
+  /* 등장 애니메이션 조립 */
+  const o = fmt(S.animOpa/100);
+  const dist = S.animDist;
+  const animParts = [];
+  let entryKf = '';
+  if (S.animType === 'unfold'){
+    entryKf = `/* 펼침: 아래에서 펼쳐지며 이전 채팅을 부드럽게 밀어 올림 */
+@keyframes chat-in {
+  0%   { opacity: ${o}; max-height: 0;            transform: ${dirOffset(S.animDir, dist)} translateZ(0); }
+  100% { opacity: 1;    max-height: ${S.animH}px; transform: translateY(0) translateZ(0); }
+}`;
+    animParts.push('chat-in ' + fmt(S.animT) + 's ' + S.animEase);
+  } else if (S.animType === 'slide'){
+    entryKf = `/* 슬라이드: 지정 방향에서 미끄러져 등장 (이전 채팅은 즉시 이동) */
+@keyframes chat-in {
+  0%   { opacity: ${o}; transform: ${dirOffset(S.animDir, dist)} translateZ(0); }
+  100% { opacity: 1;    transform: translateZ(0); }
+}`;
+    animParts.push('chat-in ' + fmt(S.animT) + 's ' + S.animEase);
+  } else if (S.animType === 'pop'){
+    entryKf = `/* 팝 바운스: 통통 튀며 등장 (통통 스타일 재구성) */
+@keyframes chat-in {
+  0%   { opacity: ${o}; transform: translateY(${dist}px) scale(0.95) translateZ(0); }
+  60%  { opacity: 1;    transform: translateY(-${Math.round(dist*0.5)}px) scale(1.08) translateZ(0); }
+  80%  { transform: translateY(${Math.round(dist*0.15)}px) scale(0.98) translateZ(0); }
+  100% { transform: translateY(0) scale(1) translateZ(0); }
+}`;
+    animParts.push('chat-in ' + fmt(S.animT) + 's ' + S.animEase);
+  } else if (S.animType === 'fade'){
+    entryKf = `/* 페이드: 제자리에서 서서히 나타남 */
+@keyframes chat-in {
+  0%   { opacity: ${o}; }
+  100% { opacity: 1; }
+}`;
+    animParts.push('chat-in ' + fmt(S.animT) + 's ' + S.animEase);
+  }
+  if (S.fadeOutOn){
+    animParts.push('chat-fadeout 1s linear ' + S.fadeOutT + 's forwards');
+  }
+  const animLine = animParts.length ? '\n  animation: ' + animParts.join(', ') + ';' : '';
+  const fadeoutKf = S.fadeOutOn ? `
+/* 자동 사라짐 : ${S.fadeOutT}초 뒤 서서히 투명해짐 */
+@keyframes chat-fadeout {
+  to { opacity: 0; }
+}` : '';
+
+  return `/* ================================================================
+   치지직 채팅 오버레이 · 레트로 신스웨이브 테마 v2
+   (커스터마이저에서 생성됨 — OBS 브라우저 소스 → 사용자 지정 CSS에 붙여넣기)
+   닉네임 표시: ${nm === 'stack' ? '2단' : nm === 'inline' ? '한 줄' : nm === 'badge' ? '플로팅 배지' : '숨김'} · 텍스트 정렬: ${S.txtAlign} · 화면 정렬: ${S.chAlign}
+   ================================================================ */
+
+/* ---------- [0] 웹폰트 ---------- */
+${FONT_IMPORTS}
+
+/* ---------- [1] 색상 팔레트 (RGBA) ---------- */
+:root {
+  --neon-sky:   ${cy(1)};
+  --neon-hotpink: ${pk(1)};
+  --night-bg-1: ${bg1};
+  --night-bg-2: ${bg2};
+  --msg-color:  ${msgCol};
+  --nick-color: ${nickCol};
+}
+
+/* ---------- [2] 기본 리셋 ---------- */
+img, svg { vertical-align: middle; }
+
+body {
+  font-family: ${FONT_STACK[S.msgFont]};
+  font-weight: 400;
+  background-color: rgba(0, 0, 0, 0);
+  margin: 0 auto;
+  overflow: hidden;
+  perspective: ${S.persp}px;
+  perspective-origin: 50% 100%;
+}
+
+/* ---------- [3] 채팅 전체 컨테이너 ---------- */
+/* 치지직은 최신 채팅을 DOM 맨 앞에 넣으므로 column-reverse로
+   "첫 요소 = 화면 맨 아래"가 되게 합니다. (최신이 아래, 이전이 위로 밀림)
+   align-items가 채팅창 화면 정렬입니다.  */
+[class*=_chatting_] {
+  height: 100vh;
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-start;
+  align-items: ${S.chAlign};
+  padding: 48px ${S.padX}px 12px ${S.padX}px;
+  box-sizing: border-box;
+  transform: rotateX(${fmt(S.tilt)}deg) translateZ(0);
+  transform-origin: 50% 100%;
+  will-change: transform;
+  -webkit-mask-image: linear-gradient(to bottom,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0.35) ${fadeMid}%,
+      rgba(0, 0, 0, 1) ${S.fade}%);
+  mask-image: linear-gradient(to bottom,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0.35) ${fadeMid}%,
+      rgba(0, 0, 0, 1) ${S.fade}%);
+}
+
+/* ---------- [4] 채팅 말풍선 ---------- */
+[class*=_item_] {
+  position: relative;
+  width: fit-content;
+  max-width: ${S.maxW}%;
+  border: ${fmt(S.borderW)}px solid ${cy(S.borderA/100)};
+  border-radius: ${S.radius}px;
+  margin-bottom: ${S.gap}px;
+  background:
+    ${layers.join(',\n    ')};
+  backdrop-filter: blur(${S.blur}px);
+  -webkit-backdrop-filter: blur(${S.blur}px);
+  box-shadow:
+    0 0 ${S.glowSize}px ${cy(S.glowA/100)},
+    0 0 ${Math.round(S.glowSize*2.6)}px ${pk(S.bloomA/100)},
+    inset 0 0 14px ${cy(fmt(S.glowA*0.002))};
+  transform: translateZ(0);
+  will-change: transform, opacity;
+  backface-visibility: hidden;${animLine}
+}
+
+/* 치지직이 고정 높이를 걸어도 본문이 잘리지 않게 강제 (지우지 마세요) */
+[class*=_item_] {
+  height: auto !important;
+}
+[class*=_item_] > [class*=_container_],
+[class*=_item_] > [class*=_container_] > [class*=_wrapper_] {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+${entryKf}${fadeoutKf}
+
+/* ---------- [5] 말풍선 내부 공통 ---------- */
+[class*=_item_] > [class*=_container_] > [class*=_wrapper_] {
+  font-size: ${S.msgSize}px !important;
+  line-height: ${fmt(S.lineH)} !important;
+  letter-spacing: 0px !important;
+  padding: ${wrapPad} !important;
+  text-align: ${S.txtAlign};
+}
+
+[class*=_wrapper_] > [class*=_container_] > [class*=_wrapper_] {
+  vertical-align: middle;
+  position: relative;
+  top: 0px;
+}
+
+${headerCSS}
+${sepCSS}
+${nickSelector} {
+  font-family: ${FONT_STACK[S.nickFont]};
+  font-size: ${S.nickSize}px;
+  font-weight: normal !important;
+${nickColorLines}  letter-spacing: 0.5px;
+  filter: drop-shadow(0 0 6px ${pk(S.nickGlow/100)});
+}
+
+/* ---------- [7] 뱃지 아이콘 ---------- */
+[class*=_icon_] img {
+  width: ${S.badgeSize}px;
+  height: ${S.badgeSize}px;
+  position: relative;
+  filter: drop-shadow(0 0 4px ${cy(0.5)});
+}
+[class*=_icon_] {
+  vertical-align: top;
+  width: auto !important;
+  height: auto !important;
+}
+[class*=_icon_] > [class*=_container_] { display: ${iconDisp}; }
+
+/* ---------- [8] 메시지 본문 ---------- */
+[class*=_wrapper_] > [class*=_text_] {
+  display: ${txtDisp} !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  padding: ${txtPad} !important;
+  font-family: ${FONT_STACK[S.msgFont]};
+  color: var(--msg-color) !important;
+  vertical-align: baseline;
+  text-shadow:
+    0 0 6px ${cy(fmt(S.msgGlow/100))},
+    0 0 16px ${cy(fmt(S.msgGlow/100*0.4))};
+}
+
+/* (안전망) 구조가 달라도 본문이 어두워지거나 숨지 않게 보장 */
+[class*=_item_] [class*=_text_] {
+  color: var(--msg-color) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+${nickTextSafety}
+
+/* 이모티콘 크기 */
+[class*=_item_] [class*=_text_] img {
+  width: ${S.emoteSize}px !important;
+  height: ${S.emoteSize}px !important;
+  position: relative;
+  top: 0px;
+}
+
+/* ---------- [9] 강조(하이라이트) 메시지 ---------- */
+[class*=_has_highlight_] { margin: 0; padding: 0; }
+
+[class*=_has_highlight_] [class*=_text_] {
+  margin: -2px !important;
+  padding: 2px 6px !important;
+  border-radius: 6px;
+  background: ${pk(0.14)} !important;
+  box-shadow: inset 0 0 0 1px ${pk(0.35)};
+  filter: drop-shadow(0 0 6px ${pk(0.45)}) !important;
+}
+
+/* ---------- [10] 그라디언트 닉네임 예외 처리 ---------- */
+[class*=_has_gradient_] [class*=_nickname_] {
+  filter: drop-shadow(0 0 6px ${pk(0.5)});
+}
+[class*=_has_gradient_] [class*=_nickname_] [class*=_text_] {
+  filter: none !important;
+}
+`;
+}
+
+/* =========================================================
+   4-B) 위플랩용 CSS 생성
+========================================================= */
+function buildWeflabCSS(){
+  const S = SW;
+  const ne = function(a){ return hexToRgba(S.wfNeon, a * S.wfNeonAlp/100); };
+  const pk = function(a){ return hexToRgba(S.wfNeon2, a * S.wfNeon2Alp/100); };
+  const st = function(a){ return hexToRgba(S.wfStNeon, a * S.wfStNeonAlp/100); };
+  const bg1 = hexToRgba(S.wfBg, S.wfBgA/100);
+  const bg2 = hexToRgba(S.wfBg2, S.wfBg2A/100);
+  const stBg = hexToRgba(S.wfStBg, S.wfStBgA/100);
+  const msgCol  = hexToRgba(S.wfMsgC, S.wfMsgCAlp/100);
+  const nickCol = hexToRgba(S.wfNickC, S.wfNickCAlp/100);
+  const stNick  = hexToRgba(S.wfStNickC, S.wfStNickCAlp/100);
+  const stMsg   = hexToRgba(S.wfStMsgC, S.wfStMsgCAlp/100);
+
+  const maskBlock = S.wfMask ? `/* ---------- [2] 채팅 영역 상단 페이드 (위플랩 공통) ---------- */
+.chat_area {
+    ;-webkit-mask-image: -webkit-gradient(linear, left bottom, left top, from(rgba(0,0,0,1)), color-stop(${fmt(S.wfMaskStop/100)}, rgba(0,0,0,1)), to(rgba(0,0,0,0)))!important
+}
+` : `/* ---------- [2] 상단 페이드 마스크: 사용 안 함 ---------- */
+`;
+
+  /* 3D 기울기 (0이면 미포함) */
+  const tiltBlock = (S.wfTilt > 0) ? `/* ---------- [2.5] 3D 기울기·원근 ---------- */
+body {
+    ;perspective: ${S.wfPersp}px
+    ;perspective-origin: 50% 100%
+}
+.chat_area {
+    ;transform: rotateX(${fmt(S.wfTilt)}deg)
+    ;transform-origin: 50% 100%
+    ;will-change: transform
+}
+` : '';
+
+  /* 아이콘 표시/숨김 */
+  const iconBlock = S.wfIconShow ? '' : `/* 플랫폼·뱃지 아이콘 숨김 */
+.icon_platform, .icon_badge {
+    ;display: none!important
+}
+`;
+
+  /* 배경 질감 레이어 */
+  const wlayers = [];
+  if (S.wfGloss) wlayers.push('linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0) 34%)');
+  if (S.wfScan)  wlayers.push('repeating-linear-gradient(0deg, rgba(255,255,255,0.035) 0px, rgba(255,255,255,0.035) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 3px)');
+  wlayers.push('linear-gradient(165deg, var(--배경-색상-위) 0%, var(--배경-색상-아래) 100%)');
+
+  /* 등장 애니메이션 분기 */
+  const o = fmt(S.wfAnimOpa/100);
+  let animLine, staticMargin = '', customKf = '';
+  if (S.wfAnim === 'weflab'){
+    animLine = ';animation: pda 600ms cubic-bezier(0, 0.76, 0.15, 1) forwards, rise 340ms cubic-bezier(0.11, 0.9, 0.21, 1) forwards, fd 240ms cubic-bezier(0.23, 0.01, 0.35, 0.68) forwards, ririse 520ms cubic-bezier(0.28, 1.3, 0, 0.96) forwards, var(--페이드-아웃) 1s linear var(--페이드-아웃-시간) forwards!important';
+  } else if (S.wfAnim === 'poing'){
+    animLine = ';animation: popSlide ' + fmt(S.wfAnimT) + 's cubic-bezier(0.2, 1.6, 0.4, 1) both, var(--페이드-아웃) 1s linear var(--페이드-아웃-시간) forwards!important';
+    staticMargin = '\n    ;margin: var(--채팅-간격) 0em 0.2em 0em!important';
+  } else if (S.wfAnim === 'slide'){
+    customKf = `@keyframes wf-custom-in {
+    0% { opacity: ${o}; transform: ${dirOffset(S.wfAnimDir, S.wfAnimDist)} }
+    100% { opacity: 1; transform: translateY(0) }
+}
+`;
+    animLine = ';animation: wf-custom-in ' + fmt(S.wfAnimT) + 's ' + S.wfAnimEase + ' both, var(--페이드-아웃) 1s linear var(--페이드-아웃-시간) forwards!important';
+    staticMargin = '\n    ;margin: var(--채팅-간격) 0em 0.2em 0em!important';
+  } else if (S.wfAnim === 'fade'){
+    customKf = `@keyframes wf-custom-in {
+    0% { opacity: ${o} }
+    100% { opacity: 1 }
+}
+`;
+    animLine = ';animation: wf-custom-in ' + fmt(S.wfAnimT) + 's ' + S.wfAnimEase + ' both, var(--페이드-아웃) 1s linear var(--페이드-아웃-시간) forwards!important';
+    staticMargin = '\n    ;margin: var(--채팅-간격) 0em 0.2em 0em!important';
+  } else {
+    animLine = ';animation: var(--페이드-아웃) 1s linear var(--페이드-아웃-시간) forwards!important';
+    staticMargin = '\n    ;margin: var(--채팅-간격) 0em 0.2em 0em!important';
+  }
+
+  /* 닉네임 스타일 분기 */
+  const nickStyleCSS = (S.wfNickStyle === 'badge') ? `
+/* 닉네임 플로팅 배지 */
+.chat_list div.chat .name {
+    ;position: absolute!important
+    ;top: ${S.wfNickTop}px
+    ;left: 10px
+    ;height: 0px
+}
+.chat_list div.chat .nick {
+    ;background: ${hexToRgba(S.wfNickBoxBg, S.wfNickBoxA/100)}
+    ;border-radius: ${S.wfNickBoxR}px
+    ;padding: 2px 12px
+    ;border: 1px solid ${ne(0.45)}
+    ;box-shadow: 0 0 8px ${hexToRgba(S.wfNickBoxBg, 0.45)}
+}
+` : '';
+
+  /* 닉네임 ':' 구분기호 */
+  const sepCSS = S.wfNickSep ? `
+/* 닉네임 뒤 ':' 구분기호 */
+.chat_list div.chat .nick::after {
+    content: ":";
+}
+` : '';
+
+  /* 닉네임 색 강제 통일 여부 */
+  const nickColorName = S.wfNickForce ? '\n    ;color: var(--닉네임-색상)!important' : '';
+  const nickColorNick = S.wfNickForce ? '\n    ;color: var(--닉네임-색상)!important' : '';
+  const stNickColor   = S.wfNickForce ? `
+.chat_list div.chat.streamer .nick {
+    ;color: var(--스트리머-닉네임-색상)!important
+}` : `
+/* 닉네임 색 강제 통일 꺼짐: 스트리머 닉네임도 플랫폼 지정색 유지 */`;
+
+  return `/* ================================================================
+   위플랩(weflab) 채팅 위젯 · 레트로 신스웨이브 커스텀 v2
+   (커스터마이저에서 생성됨 — 위플랩 위젯 설정의 커스텀 CSS에 붙여넣기)
+   ================================================================ */
+
+/* ---------- [0] 웹폰트 ---------- */
+${FONT_IMPORTS}
+
+/* ---------- [1] 위플랩 표준 :root 변수 (RGBA) ---------- */
+:root {
+    ;--폰트-사이즈: ${S.wfFontSize}px
+    ;--닉네임-사이즈: ${S.wfNickSize}px
+    ;--폰트-이름: ${FONT_STACK[S.wfFont]}
+    ;--닉네임-폰트: ${FONT_STACK[S.wfNickFont]}
+    ;--닉네임-표시: ${S.wfNickShow ? 'flex' : 'none'}    /* flex: 표시, none: 숨기기 */
+
+    ;--닉네임-색상: ${nickCol}
+    ;--메시지-색상: ${msgCol}
+    ;--배경-색상-위: ${bg1}
+    ;--배경-색상-아래: ${bg2}
+    ;--네온-색상: ${ne(1)}
+
+    ;--스트리머-닉네임-색상: ${stNick}
+    ;--스트리머-메시지-색상: ${stMsg}
+    ;--스트리머-배경-색상: ${stBg}
+
+    ;--모서리-둥글기: ${fmt(S.wfRadius)}em
+    ;--채팅-간격: ${S.wfGap}px
+    ;--채팅창-정렬: ${S.wfAlign}    /* start: 왼쪽, center: 중앙, end: 오른쪽 */
+
+    ;--페이드-아웃: ${S.wfFadeOn ? 'fade-on' : 'fade-off'}    /* fade-on: 활성, fade-off: 비활성 */
+    ;--페이드-아웃-시간: ${S.wfFadeT}s
+}
+
+${maskBlock}${tiltBlock}${iconBlock}
+/* ---------- [3] 리스트 골격 (init) ---------- */
+.chat_list {
+    ;display: grid!important
+    ;grid-template-columns: 1fr!important
+    ;align-items: var(--채팅창-정렬)!important
+    ;justify-items: var(--채팅창-정렬)!important
+}
+.chat_list > div {
+    ;margin: unset
+}
+.chat_list div.chat,
+.chat_list div.chat .inner_box {
+    ;width: fit-content!important
+    ;position: relative!important
+}
+.chat_list div.chat {
+    ;max-width: ${S.wfMaxW}%!important
+}
+
+/* ---------- [4] 말풍선 (신스웨이브 네온) ---------- */
+.chat_list .inner_box {
+    ;font-size: var(--폰트-사이즈)!important
+    ;line-height: ${fmt(S.wfLineH)}em!important
+    ;font-family: var(--폰트-이름)!important
+}
+.chat_list div.chat {
+    ;background: ${wlayers.join(', ')}!important
+    ;border: ${fmt(S.wfBorderW)}px solid ${ne(S.wfBorderA/100)}!important
+    ;box-shadow: 0 0 ${S.wfGlowSize}px ${ne(S.wfNeonA/100)}, 0 0 ${Math.round(S.wfGlowSize*2.4)}px ${pk(S.wfBloomA/100)}, inset 0 0 12px ${ne(0.07)}!important
+    ;backdrop-filter: blur(${S.wfBlur}px)
+    ;-webkit-backdrop-filter: blur(${S.wfBlur}px)
+    ;padding: ${fmt(S.wfPadY)}em ${fmt(S.wfPadXIn)}em
+    ;border-radius: var(--모서리-둥글기)
+    ;font-size: var(--폰트-사이즈)!important
+    ;line-height: ${fmt(S.wfLineH)}em!important${staticMargin}
+    ${animLine}
+}
+${nickStyleCSS}${sepCSS}
+/* ---------- [5] 닉네임 / 본문 ---------- */
+.chat_list div.chat .name {
+    ;display: var(--닉네임-표시)!important
+    ;font-size: var(--닉네임-사이즈)!important
+    ;font-family: var(--닉네임-폰트)!important
+    ;line-height: ${fmt(S.wfLineH)}em!important
+    ;text-shadow: none!important
+    ;font-weight: normal!important${nickColorName}
+    ;filter: drop-shadow(0 0 6px ${pk(S.wfNickGlow/100)})
+}
+.chat_list div.chat .name :not(.nick) {
+    margin-bottom: 0.1em
+}
+.chat_list div.chat .nick {
+    ;font-size: var(--닉네임-사이즈)!important
+    ;font-family: var(--닉네임-폰트)!important
+    ;line-height: ${fmt(S.wfLineH)}em!important${nickColorNick}
+    ;font-weight: normal!important
+}
+.chat_list div.chat .text {
+    ;font-size: var(--폰트-사이즈)!important
+    ;font-family: var(--폰트-이름)!important
+    ;color: var(--메시지-색상)!important
+    ;line-height: ${fmt(S.wfLineH)}em!important
+    ;font-weight: 400!important
+    ;text-align: ${S.wfTxtAlign}!important
+    ;text-shadow: 0 0 6px ${ne(fmt(S.wfTextGlow/100))}, 0 0 16px ${ne(fmt(S.wfTextGlow/100*0.4))}!important
+}
+.chat_list div.chat .text span {
+    ;margin: -0.1em 0.06em
+    ;border-radius: 0.2em
+}
+.chat_list div.chat .text img {
+    ;width: ${S.wfEmoteSize}px!important
+    ;height: ${S.wfEmoteSize}px!important
+    ;vertical-align: middle
+}
+
+/* ---------- [6] 스트리머 메시지 ---------- */
+.chat_list div.chat.streamer {
+    ;background: var(--스트리머-배경-색상)!important
+    ;border: ${fmt(S.wfBorderW)}px solid ${st(0.85)}!important
+    ;box-shadow: 0 0 ${S.wfGlowSize}px ${st(S.wfStGlowA/100)}, 0 0 ${Math.round(S.wfGlowSize*2.4)}px ${st(fmt(S.wfStGlowA/100*0.45))}!important
+}${stNickColor}
+.chat_list div.chat.streamer .name {
+    ;filter: drop-shadow(0 0 6px ${ne(0.5)})
+}
+.chat_list div.chat.streamer .text {
+    ;color: var(--스트리머-메시지-색상)!important
+}
+
+/* ---------- [7] 진입/퇴장 애니메이션 ---------- */
+${customKf}@keyframes pda {
+    0% { padding: ${fmt(S.wfPadY*0.15)}em ${fmt(S.wfPadXIn)}em ${fmt(S.wfPadY*0.15)}em ${fmt(S.wfPadXIn)}em }
+    100% { padding: ${fmt(S.wfPadY)}em ${fmt(S.wfPadXIn)}em ${fmt(S.wfPadY*0.86)}em ${fmt(S.wfPadXIn)}em }
+}
+@keyframes rise {
+    0% { margin: 0.2em 0em -10em 0em }
+    100% { margin: var(--채팅-간격) 0em 0.2em 0em }
+}
+@keyframes fd {
+    0% { opacity: 0 }
+    100% { opacity: 1 }
+}
+@keyframes ririse {
+    0% { transform: translateX(0px) translateY(10em) scale(1) }
+    100% { transform: translateX(0px) translateY(0em) scale(1) }
+}
+@keyframes popSlide {
+    0% { opacity: 0; transform: translateY(30px) scale(0.95) }
+    60% { opacity: 1; transform: translateY(-8px) scale(1.1) }
+    80% { transform: translateY(3px) scale(0.98) }
+    100% { transform: translateY(0) scale(1) }
+}
+@keyframes fade-on {
+    0% { opacity: 1 }
+    100% { opacity: 0 }
+}
+@keyframes fade-off {
+    0% { }
+    100% { }
+}
+`;
+}
+
+function activeCSS(){ return mode === 'chzzk' ? buildChzzkCSS() : buildWeflabCSS(); }
+
+/* =========================================================
+   5) 컨트롤 패널 렌더링
+========================================================= */
+function renderControls(mount, sections, state, defaults){
+  const refs = {};
+  mount.innerHTML = '';
+  sections.forEach(function(sec){
+    const d = document.createElement('details');
+    d.className = 'sec';
+    if (sec.open) d.open = true;
+    const sum = document.createElement('summary');
+    sum.textContent = sec.title;
+    d.appendChild(sum);
+    const body = document.createElement('div');
+    body.className = 'sec-body';
+
+    sec.items.forEach(function(it){
+      const wrap = document.createElement('div');
+      wrap.className = 'ctl';
+      const lbl = document.createElement('div');
+      lbl.className = 'lbl';
+      lbl.innerHTML = '<span class="name">' + it.label + '</span>' +
+                      (it.hint ? '<span class="hint">' + it.hint + '</span>' : '');
+      wrap.appendChild(lbl);
+
+      const row = document.createElement('div');
+      row.className = 'row';
+
+      if (it.t === 'range'){
+        const r = document.createElement('input');
+        r.type = 'range'; r.min = it.min; r.max = it.max; r.step = it.step; r.value = state[it.k];
+        const n = document.createElement('input');
+        n.type = 'number'; n.className = 'num'; n.min = it.min; n.max = it.max; n.step = it.step; n.value = state[it.k];
+        const u = document.createElement('span'); u.className = 'unit'; u.textContent = it.unit;
+        r.addEventListener('input', function(e){
+          const v = parseFloat(e.target.value);
+          state[it.k] = v; n.value = v; apply();
+        });
+        n.addEventListener('input', function(e){
+          const v = parseFloat(e.target.value);
+          if (!isNaN(v) && v >= it.min && v <= it.max){ state[it.k] = v; r.value = v; apply(); }
+        });
+        n.addEventListener('change', function(e){
+          let v = parseFloat(e.target.value);
+          if (isNaN(v)) v = state[it.k];
+          v = Math.min(it.max, Math.max(it.min, v));
+          state[it.k] = v; r.value = v; n.value = v; apply();
+        });
+        row.appendChild(r); row.appendChild(n); row.appendChild(u);
+        refs[it.k] = [r, n];
+      }
+      else if (it.t === 'rgba'){
+        /* RGBA 통합 컨트롤: 색상 + 불투명도(alpha) */
+        const c = document.createElement('input');
+        c.type = 'color'; c.value = state[it.k];
+        const r = document.createElement('input');
+        r.type = 'range'; r.min = 0; r.max = 100; r.step = 1; r.value = state[it.ak];
+        r.title = '불투명도(알파)';
+        const n = document.createElement('input');
+        n.type = 'number'; n.className = 'num'; n.min = 0; n.max = 100; n.step = 1; n.value = state[it.ak];
+        const u = document.createElement('span'); u.className = 'unit'; u.textContent = '%';
+        c.addEventListener('input', function(e){ state[it.k] = e.target.value; apply(); });
+        r.addEventListener('input', function(e){
+          const v = parseFloat(e.target.value);
+          state[it.ak] = v; n.value = v; apply();
+        });
+        n.addEventListener('input', function(e){
+          const v = parseFloat(e.target.value);
+          if (!isNaN(v) && v >= 0 && v <= 100){ state[it.ak] = v; r.value = v; apply(); }
+        });
+        n.addEventListener('change', function(e){
+          let v = parseFloat(e.target.value);
+          if (isNaN(v)) v = state[it.ak];
+          v = Math.min(100, Math.max(0, v));
+          state[it.ak] = v; r.value = v; n.value = v; apply();
+        });
+        row.appendChild(c); row.appendChild(r); row.appendChild(n); row.appendChild(u);
+        refs[it.k] = [c];
+        refs[it.ak] = [r, n];
+      }
+      else if (it.t === 'color'){
+        const c = document.createElement('input');
+        c.type = 'color'; c.value = state[it.k];
+        const hx = document.createElement('span'); hx.className = 'hexlbl'; hx.textContent = state[it.k];
+        c.addEventListener('input', function(e){
+          state[it.k] = e.target.value; hx.textContent = e.target.value; apply();
+        });
+        row.appendChild(c); row.appendChild(hx);
+        refs[it.k] = [c, hx];
+      }
+      else if (it.t === 'select'){
+        const sel = document.createElement('select');
+        it.opts.forEach(function(o){
+          const op = document.createElement('option');
+          op.value = o.v; op.textContent = o.label;
+          sel.appendChild(op);
+        });
+        sel.value = state[it.k];
+        sel.addEventListener('change', function(e){ state[it.k] = e.target.value; apply(); });
+        row.appendChild(sel);
+        refs[it.k] = [sel];
+      }
+      else if (it.t === 'toggle'){
+        const lab = document.createElement('label'); lab.className = 'switch';
+        const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = state[it.k];
+        const sl = document.createElement('span'); sl.className = 'slider-tg';
+        lab.appendChild(cb); lab.appendChild(sl);
+        const st = document.createElement('span');
+        st.style.cssText = 'color:var(--sub);font-size:12px';
+        st.textContent = state[it.k] ? '켜짐' : '꺼짐';
+        cb.addEventListener('change', function(e){
+          state[it.k] = e.target.checked; st.textContent = state[it.k] ? '켜짐' : '꺼짐'; apply();
+        });
+        row.appendChild(lab); row.appendChild(st);
+        refs[it.k] = [cb, st];
+      }
+      wrap.appendChild(row);
+      body.appendChild(wrap);
+    });
+    d.appendChild(body);
+    mount.appendChild(d);
+  });
+  return refs;
+}
+
+/* =========================================================
+   6) 미리보기 iframe — 모드별 실제 DOM 구조 재현
+========================================================= */
+const frame = document.getElementById('pv-frame');
+let fdoc = null, styleEl = null, helperEl = null, stageEl = null, listEl = null;
+
+const BG = {
+  dark: 'radial-gradient(1000px 500px at 72% 12%, rgba(255,45,149,.20), transparent 62%),' +
+        'radial-gradient(800px 460px at 12% 85%, rgba(94,231,255,.18), transparent 62%),' +
+        'linear-gradient(180deg, #150a28 0%, #07040f 100%)',
+  mid:  'linear-gradient(180deg, #9aa1ad 0%, #737a88 100%)',
+  light:'linear-gradient(180deg, #ffffff 0%, #dde3ea 100%)'
+};
+let curBg = 'dark';
+
+const WF_HELPER = 'html,body{margin:0;height:100%;overflow:hidden} p{margin:0} ' +
+  '.chat_area{position:fixed;left:0;top:0;right:0;bottom:0;display:flex;flex-direction:column;justify-content:flex-end;padding:48px 16px 12px;box-sizing:border-box} ' +
+  '.chat_list{width:100%}';
+
+function writeFrameDoc(){
+  fdoc.open();
+  fdoc.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><style id="helper"></style><style id="ov"></style></head><body><div id="stage"></div></body></html>');
+  fdoc.close();
+  styleEl  = fdoc.getElementById('ov');
+  helperEl = fdoc.getElementById('helper');
+  stageEl  = fdoc.getElementById('stage');
+}
+
+function buildStage(){
+  if (mode === 'chzzk'){
+    helperEl.textContent = '';
+    stageEl.innerHTML = '<div class="live_chatting_list__pv" id="list"></div>';
+  } else {
+    helperEl.textContent = WF_HELPER;
+    stageEl.innerHTML = '<div class="chat_area"><div class="chat_list" id="list"></div></div>';
+  }
+  listEl = fdoc.getElementById('list');
+}
+
+function initFrame(){
+  try {
+    fdoc = frame.contentDocument;
+    if (!fdoc) throw new Error('preview frame unavailable');
+    writeFrameDoc();
+    buildStage();
+    setBg(curBg);
+  } catch(e){
+    document.getElementById('pv-foot').textContent = '⚠ 이 환경에서는 미리보기를 표시할 수 없습니다. 파일을 내려받아 브라우저에서 직접 열면 정상 동작합니다.';
+  }
+  frame.addEventListener('load', function(){
+    const d = frame.contentDocument;
+    if (d && !d.getElementById('stage')){
+      fdoc = d;
+      writeFrameDoc();
+      buildStage();
+      setBg(curBg);
+      apply();
+      seedChats();
+    }
+  });
+}
+
+function setBg(bgMode){
+  curBg = bgMode;
+  if (fdoc) fdoc.documentElement.style.background = BG[bgMode];
+  document.querySelectorAll('#bg-seg button').forEach(function(b){
+    b.classList.toggle('active', b.dataset.bg === bgMode);
+  });
+}
+
+/* ----- 가짜 채팅 데이터 ----- */
+function svgURI(s){ return 'data:image/svg+xml,' + encodeURIComponent(s); }
+const BADGE_STAR  = svgURI("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='1.5' y='1.5' width='21' height='21' rx='6' fill='#ff2d95'/><path d='M12 5.6l1.9 3.9 4.3.6-3.1 3 .7 4.3L12 15.3l-3.8 2.1.7-4.3-3.1-3 4.3-.6z' fill='#fff'/></svg>");
+const BADGE_CHECK = svgURI("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='1.5' y='1.5' width='21' height='21' rx='6' fill='#5ee7ff'/><path d='M6.5 12.5l3.5 3.5 7.5-8' stroke='#0a0616' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+const EMOTE_HEART = svgURI("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 21s-7.2-4.7-9.6-9.1C.8 8 3 4.4 6.6 4.4c2 0 3.6 1.1 4.6 2.7 1-1.6 2.6-2.7 4.6-2.7 3.6 0 5.8 3.6 4.2 7.5C19.2 16.3 12 21 12 21z' fill='#ff2d95'/></svg>");
+const EMOTE_STAR  = svgURI("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2.5l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 16.5l-5.4 2.9 1-6.1L3.2 9l6.1-.9z' fill='#5ee7ff'/></svg>");
+
+const CHAT_POOL = [
+  {n:'네온플라밍고', t:'오늘 배경 진짜 미쳤다 ㄷㄷ', b:BADGE_STAR},
+  {n:'시티팝러버', t:'이 채팅창 디자인 너무 예쁜데요?', e:EMOTE_HEART},
+  {n:'D.FLA', t:'다들 어서와요! 오늘도 밤바다 감성으로 갑니다', st:true},
+  {n:'밤바다', t:'비 오는 밤에 듣는 로파이 최고다...'},
+  {n:'레트로키드', t:'저 브라운관 TV 실제로 쓰시는 건가요 ㅋㅋ', b:BADGE_CHECK},
+  {n:'가독성테스터', t:'희귀 글자 테스트: 뜛렝뀛 홥쒧 1234 ABC'},
+  {n:'퍼플레인', t:'우와 이 채팅창 진짜 시티팝 감성 물씬 나고 밤에 보기 딱 좋은 것 같아요 창밖에 야자수까지 완벽하네요 오래오래 방송해주세요', b:BADGE_STAR},
+  {n:'카세트덕후', t:'LO-FI TROPICS 테이프 어디서 구하셨어요?'},
+  {n:'새벽감성', t:'하이라이트 메시지는 이렇게 보입니다', hl:true},
+  {n:'게임보이', t:'ㅋㅋㅋㅋㅋㅋㅋㅋ'},
+  {n:'모하비', t:'방금 들어왔는데 분위기 무엇...', e:EMOTE_HEART},
+  {n:'스타더스트', t:'닉네임 폰트 도트 감성 좋다', b:BADGE_CHECK},
+  {n:'D_FLA_팬', t:'스트리머님 오늘도 잘 보고 갑니다!!', e:EMOTE_STAR}
+];
+let poolIdx = 0;
+
+function makeItemCH(data){
+  const item = fdoc.createElement('div');
+  item.className = 'chat_item__pv';
+
+  const cont = fdoc.createElement('div');
+  cont.className = 'msg_container__pv';
+
+  const wrap = fdoc.createElement('div');
+  wrap.className = 'msg_wrapper__pv' + (data.hl ? ' msg_has_highlight__pv' : '');
+
+  const nameCont = fdoc.createElement('span');
+  nameCont.className = 'name_container__pv';
+  const inner = fdoc.createElement('span');
+  inner.className = 'inner_wrapper__pv';
+
+  if (data.b){
+    const ic = fdoc.createElement('span');
+    ic.className = 'badge_icon__pv';
+    const icc = fdoc.createElement('span');
+    icc.className = 'icon_container__pv';
+    icc.style.display = 'inline-block';
+    const img = fdoc.createElement('img');
+    img.src = data.b; img.alt = '뱃지';
+    icc.appendChild(img); ic.appendChild(icc); inner.appendChild(ic);
+    inner.appendChild(fdoc.createTextNode(' '));
+  }
+  const nick = fdoc.createElement('span');
+  nick.className = 'live_nickname__pv';
+  const nickText = fdoc.createElement('span');
+  nickText.className = 'nick_text__pv';
+  nickText.textContent = data.n;
+  nick.appendChild(nickText);
+  inner.appendChild(nick);
+  nameCont.appendChild(inner);
+
+  const text = fdoc.createElement('span');
+  text.className = 'msg_text__pv';
+  text.textContent = data.t;
+  if (data.e){
+    const em = fdoc.createElement('img');
+    em.src = data.e; em.alt = '이모티콘';
+    text.appendChild(fdoc.createTextNode(' '));
+    text.appendChild(em);
+  }
+
+  wrap.appendChild(nameCont);
+  wrap.appendChild(text);
+  cont.appendChild(wrap);
+  item.appendChild(cont);
+  return item;
+}
+
+function makeItemWF(data){
+  const box = fdoc.createElement('div');
+  box.className = 'chat_box chat naver' + (data.st ? ' streamer' : '');
+
+  const inner = fdoc.createElement('div');
+  inner.className = 'inner_box';
+
+  const pn = fdoc.createElement('p');
+  pn.className = 'name';
+  const nick = fdoc.createElement('span');
+  nick.className = 'nick';
+  nick.textContent = data.n;
+  pn.appendChild(nick);
+
+  const pt = fdoc.createElement('p');
+  pt.className = 'text';
+  pt.textContent = data.t;
+  if (data.e){
+    const sp = fdoc.createElement('span');
+    const em = fdoc.createElement('img');
+    em.src = data.e; em.alt = '이모티콘';
+    em.width = SW.wfEmoteSize;
+    em.height = SW.wfEmoteSize;
+    sp.appendChild(em);
+    pt.appendChild(fdoc.createTextNode(' '));
+    pt.appendChild(sp);
+  }
+
+  inner.appendChild(pn);
+  inner.appendChild(pt);
+  box.appendChild(inner);
+  return box;
+}
+
+function addChat(){
+  if (!listEl) return;
+  const data = CHAT_POOL[poolIdx % CHAT_POOL.length];
+  poolIdx++;
+  if (mode === 'chzzk'){
+    listEl.insertBefore(makeItemCH(data), listEl.firstChild);
+    while (listEl.children.length > 18) listEl.removeChild(listEl.lastChild);
+  } else {
+    listEl.appendChild(makeItemWF(data));
+    while (listEl.children.length > 18) listEl.removeChild(listEl.firstChild);
+  }
+}
+
+function seedChats(){
+  if (!listEl) return;
+  listEl.innerHTML = '';
+  for (let i = 0; i < 6; i++) setTimeout(addChat, i * 140);
+}
+
+let autoTimer = null;
+function setAuto(on){
+  const btn = document.getElementById('btn-auto');
+  if (on){
+    if (!autoTimer) autoTimer = setInterval(addChat, 2200);
+    btn.textContent = '⏸ 자동 일시정지';
+  } else {
+    clearInterval(autoTimer); autoTimer = null;
+    btn.textContent = '▶ 자동 재생';
+  }
+}
+
+/* =========================================================
+   7) 적용 · 복사 · 다운로드 · 초기화 · 모드 전환
+========================================================= */
+const cssView = document.getElementById('css-view');
+
+function apply(){
+  const css = activeCSS();
+  if (styleEl) styleEl.textContent = css;
+  cssView.value = css;
+}
+
+function fileName(){ return mode === 'chzzk' ? 'chzzk-overlay.css' : 'weflab-widget.css'; }
+
+function copyCSS(){
+  const css = activeCSS();
+  function done(ok){
+    showToast(ok
+      ? '✓ ' + fileName() + ' 내용 복사 완료 · ' + (mode === 'chzzk' ? 'OBS 사용자 지정 CSS에 붙여넣으세요' : 'OBS 사용자 지정 CSS에 붙여넣으세요')
+      : '자동 복사가 차단됐어요 — 아래 CSS가 전체 선택돼 있으니 Ctrl+C (Mac: ⌘+C)를 눌러주세요');
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(css).then(function(){ done(true); }, function(){ fallbackCopy(css, done); });
+  } else {
+    fallbackCopy(css, done);
+  }
+}
+function fallbackCopy(css, done){
+  try {
+    const det = cssView.closest('details');
+    if (det && !det.open) det.open = true;
+    cssView.value = css;
+    cssView.focus(); cssView.select();
+    try { cssView.setSelectionRange(0, cssView.value.length); } catch(e){}
+    const ok = document.execCommand('copy');
+    if (!ok && det) det.scrollIntoView({behavior:'smooth', block:'nearest'});
+    done(ok);
+  } catch(e){ done(false); }
+}
+
+function downloadCSS(){
+  const css = activeCSS();
+  try {
+    const blob = new Blob([css], {type:'text/css;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = fileName();
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
+    showToast('⬇ ' + fileName() + ' 다운로드를 시작했습니다');
+  } catch(e){
+    showToast('다운로드가 차단됐어요 — 복사 버튼이나 아래 CSS 칸을 이용해주세요');
+  }
+}
+
+let toastTimer = null;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 3000);
+}
+
+let refsC = null, refsW = null;
+
+function resetAll(){
+  if (mode === 'chzzk'){
+    SC = Object.assign({}, DEF_C);
+    refsC = renderControls(document.getElementById('sections-chzzk'), SECTIONS_C, SC, DEF_C);
+    showToast('↺ 치지직 설정을 기본값(신스웨이브)으로 초기화했습니다');
+  } else {
+    SW = Object.assign({}, DEF_W);
+    refsW = renderControls(document.getElementById('sections-weflab'), SECTIONS_W, SW, DEF_W);
+    showToast('↺ 위플랩 설정을 기본값(신스웨이브)으로 초기화했습니다');
+  }
+  apply();
+}
+
+const NOTE_CH = '<b>OBS 적용:</b> 복사/다운로드한 CSS를 브라우저 소스 속성 → <b>사용자 지정 CSS</b>에 붙여넣고, 소스 우클릭 → "캐시를 지우고 현재 페이지 새로고침"을 실행하세요.<br><b>참고:</b> 이 미리보기 환경에서 웹폰트 CDN이 차단되면 대체 폰트로 보일 수 있지만, 실제 OBS에서는 정상 적용됩니다.';
+const NOTE_WF = '<b>OBS 적용:</b> 복사/다운로드한 CSS를 브라우저 소스 속성 → <b>사용자 지정 CSS</b>에 붙여넣고, 소스 우클릭 → "캐시를 지우고 현재 페이지 새로고침"을 실행하세요.<br><b>참고:</b> 이 미리보기 환경에서 웹폰트 CDN이 차단되면 대체 폰트로 보일 수 있지만, 실제 OBS에서는 정상 적용됩니다.';
+const FOOT_CH = '치지직 구조([class*=_item_] 부분일치) 재현 · 닉네임 2단/한 줄/숨김/플로팅 배지 · 화면 정렬 · 자동 사라짐 · 등장 애니메이션 5종 즉시 반영';
+const FOOT_WF = '위플랩 공통 구조(.chat_list div.chat > .name/.nick/.text) 재현 · 스트리머/정렬/페이드아웃/플로팅 배지/애니메이션 5종/3D 기울기 실동작';
+
+function setMode(m){
+  if (mode === m) return;
+  mode = m;
+  document.querySelectorAll('#mode-tabs button').forEach(function(b){
+    b.classList.toggle('active', b.dataset.mode === m);
+  });
+  document.getElementById('sections-chzzk').style.display  = (m === 'chzzk')  ? '' : 'none';
+  document.getElementById('sections-weflab').style.display = (m === 'weflab') ? '' : 'none';
+  document.getElementById('apply-note').innerHTML = (m === 'chzzk') ? NOTE_CH : NOTE_WF;
+  document.getElementById('pv-foot').textContent  = (m === 'chzzk') ? FOOT_CH : FOOT_WF;
+  if (fdoc && stageEl){ buildStage(); }
+  apply();
+  seedChats();
+  showToast(m === 'chzzk' ? '치지직 모드 — chzzk-overlay.css 생성' : '위플랩 모드 — weflab-widget.css 생성');
+}
+
+/* =========================================================
+   8) 시작
+========================================================= */
+document.getElementById('btn-copy').addEventListener('click', copyCSS);
+document.getElementById('btn-download').addEventListener('click', downloadCSS);
+document.getElementById('btn-reset').addEventListener('click', resetAll);
+document.getElementById('btn-add').addEventListener('click', addChat);
+document.getElementById('btn-auto').addEventListener('click', function(){ setAuto(!autoTimer); });
+document.getElementById('bg-seg').addEventListener('click', function(e){
+  if (e.target.dataset && e.target.dataset.bg) setBg(e.target.dataset.bg);
+});
+document.getElementById('mode-tabs').addEventListener('click', function(e){
+  if (e.target.dataset && e.target.dataset.mode) setMode(e.target.dataset.mode);
+});
+
+refsC = renderControls(document.getElementById('sections-chzzk'), SECTIONS_C, SC, DEF_C);
+refsW = renderControls(document.getElementById('sections-weflab'), SECTIONS_W, SW, DEF_W);
+document.getElementById('apply-note').innerHTML = NOTE_CH;
+document.getElementById('pv-foot').textContent = FOOT_CH;
+
+initFrame();
+apply();
+seedChats();
+setAuto(true);
+</script>
+</body>
+</html>
